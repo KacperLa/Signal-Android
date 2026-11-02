@@ -4,6 +4,7 @@
 
 package org.thoughtcrime.securesms.conversation.colors.ui.custom
 
+import android.app.Application
 import android.graphics.Color
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -13,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE)
+@Config(application = Application::class, manifest = Config.NONE)
 class ColorSlidersStateTest {
   private val max = 1023
 

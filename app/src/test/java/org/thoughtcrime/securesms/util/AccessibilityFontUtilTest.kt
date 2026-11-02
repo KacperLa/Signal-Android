@@ -3,6 +3,7 @@
  */
 package org.thoughtcrime.securesms.util
 
+import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.util.TypedValue
@@ -14,7 +15,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, sdk = [33, 34])
+@Config(application = Application::class, manifest = Config.NONE, sdk = [33, 34])
 class AccessibilityFontUtilTest {
   @Test
   fun `interface scale respects system setting and clamps preference`() {
