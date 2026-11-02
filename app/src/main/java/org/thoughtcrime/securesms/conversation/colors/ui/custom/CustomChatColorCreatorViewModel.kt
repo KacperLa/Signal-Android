@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.conversation.colors.ui.custom
 
-import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -36,27 +35,8 @@ class CustomChatColorCreatorViewModel(
         val topColor: Int = colors.first()
         val bottomColor: Int = colors.last()
 
-        val topHsl = floatArrayOf(0f, 0f, 0f)
-        val bottomHsl = floatArrayOf(0f, 0f, 0f)
-
-        ColorUtils.colorToHSL(topColor, topHsl)
-        ColorUtils.colorToHSL(bottomColor, bottomHsl)
-
-        val topHue: Float = topHsl[0]
-        val topSaturation: Float = topHsl[1]
-
-        val bottomHue: Float = bottomHsl[0]
-        val bottomSaturation: Float = bottomHsl[1]
-
-        val topEdge = ColorSlidersState(
-          huePosition = ((topHue / 360f) * maxSliderValue).roundToInt(),
-          saturationPosition = (topSaturation * maxSliderValue).roundToInt()
-        )
-
-        val bottomEdge = ColorSlidersState(
-          huePosition = ((bottomHue / 360f) * maxSliderValue).roundToInt(),
-          saturationPosition = (bottomSaturation * maxSliderValue).roundToInt()
-        )
+        val topEdge = ColorSlidersState.fromColor(topColor, maxSliderValue)
+        val bottomEdge = ColorSlidersState.fromColor(bottomColor, maxSliderValue)
 
         store.update { state ->
           state.copy(
@@ -77,7 +57,7 @@ class CustomChatColorCreatorViewModel(
   fun setHueProgress(progress: Int) {
     store.update { state ->
       state.copy(
-        sliderStates = state.sliderStates.apply {
+        sliderStates = EnumMap(state.sliderStates).apply {
           val oldData: ColorSlidersState = requireNotNull(get(state.selectedEdge))
           put(state.selectedEdge, oldData.copy(huePosition = progress))
         }
@@ -88,9 +68,20 @@ class CustomChatColorCreatorViewModel(
   fun setSaturationProgress(progress: Int) {
     store.update { state ->
       state.copy(
-        sliderStates = state.sliderStates.apply {
+        sliderStates = EnumMap(state.sliderStates).apply {
           val oldData: ColorSlidersState = requireNotNull(get(state.selectedEdge))
           put(state.selectedEdge, oldData.copy(saturationPosition = progress))
+        }
+      )
+    }
+  }
+
+  fun setBrightnessProgress(progress: Int) {
+    store.update { state ->
+      state.copy(
+        sliderStates = EnumMap(state.sliderStates).apply {
+          val oldData = requireNotNull(get(state.selectedEdge))
+          put(state.selectedEdge, oldData.copy(brightnessPosition = progress.coerceIn(0, maxSliderValue)))
         }
       )
     }
@@ -127,8 +118,8 @@ class CustomChatColorCreatorViewModel(
     wallpaper = null,
     sliderStates = EnumMap(
       mapOf(
-        CustomChatColorEdge.TOP to ColorSlidersState(maxSliderValue / 2, maxSliderValue / 2),
-        CustomChatColorEdge.BOTTOM to ColorSlidersState(maxSliderValue / 2, maxSliderValue / 2)
+        CustomChatColorEdge.TOP to ColorSlidersState(maxSliderValue / 2, maxSliderValue / 2, (maxSliderValue * 0.3f).roundToInt()),
+        CustomChatColorEdge.BOTTOM to ColorSlidersState(maxSliderValue / 2, maxSliderValue / 2, (maxSliderValue * 0.3f).roundToInt())
       )
     ),
     selectedEdge = CustomChatColorEdge.BOTTOM,

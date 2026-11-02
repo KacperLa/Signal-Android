@@ -6,6 +6,7 @@ import android.provider.Settings
 import androidx.annotation.ArrayRes
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
+import org.signal.appsettings.appearance.MessageFontSizes
 import org.signal.core.models.calls.CallDataMode
 import org.signal.core.models.media.SentMediaQuality
 import org.signal.core.util.StringStringSerializer
@@ -16,10 +17,7 @@ import org.thoughtcrime.securesms.preferences.widgets.NotificationPrivacyPrefere
 import org.thoughtcrime.securesms.util.DynamicTheme
 import org.thoughtcrime.securesms.util.Environment
 import org.thoughtcrime.securesms.util.SingleLiveEvent
-import java.util.Arrays
 import java.util.Random
-import kotlin.math.abs
-import org.signal.appsettings.R as AppSettingsR
 
 @Suppress("DEPRECATION")
 class SettingsValues internal constructor(store: KeyValueStore, private val context: Context) : SignalStoreValues(store) {
@@ -235,24 +233,19 @@ class SettingsValues internal constructor(store: KeyValueStore, private val cont
       configurationSettingChanged.postValue(THEME)
     }
 
-  var messageFontSize: Int by integerValue(MESSAGE_FONT_SIZE, 16)
-
-  fun getMessageQuoteFontSize(context: Context): Int {
-    val currentMessageSize = messageFontSize
-    val possibleMessageSizes = context.resources.getIntArray(AppSettingsR.array.pref_message_font_size_values)
-    val possibleQuoteSizes = context.resources.getIntArray(R.array.pref_message_font_quote_size_values)
-    var sizeIndex = Arrays.binarySearch(possibleMessageSizes, currentMessageSize)
-
-    if (sizeIndex < 0) {
-      val newSize = possibleMessageSizes.minBy { abs(it - currentMessageSize) }
-      Log.w(TAG, "Using non-standard font size of $currentMessageSize. Closest match was $newSize. Updating.")
-
-      messageFontSize = newSize
-      sizeIndex = Arrays.binarySearch(possibleMessageSizes, newSize)
+  var messageFontSize: Int
+    get() = getInteger(MESSAGE_FONT_SIZE, 16).coerceIn(MessageFontSizes.MIN, MessageFontSizes.MAX)
+    set(value) {
+      putInteger(MESSAGE_FONT_SIZE, value.coerceIn(MessageFontSizes.MIN, MessageFontSizes.MAX))
     }
 
-    return possibleQuoteSizes[sizeIndex]
-  }
+  var interfaceFontScalePercent: Int
+    get() = PlainTextKeyValueStore.interfaceFontScalePercent
+    set(value) {
+      PlainTextKeyValueStore.interfaceFontScalePercent = value.coerceIn(100, 150)
+    }
+
+  fun getMessageQuoteFontSize(context: Context): Int = MessageFontSizes.quoteSize(messageFontSize)
 
   var isPreferSystemEmoji: Boolean by booleanValue(PREFER_SYSTEM_EMOJI, false)
 

@@ -31,6 +31,7 @@ import org.signal.core.ui.util.ThemeUtil
 import org.signal.core.ui.util.ViewUtil
 import org.signal.core.util.StringUtil
 import org.signal.core.util.dp
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.mention.MentionAnnotation
 import org.thoughtcrime.securesms.conversation.BodyBubbleLayoutTransition
@@ -175,7 +176,7 @@ open class V2ConversationItemTextOnlyViewHolder<Model : MappingModel<Model>>(
     }
 
     binding.body.isFocusable = false
-    binding.body.setTextSize(TypedValue.COMPLEX_UNIT_SP, SignalStore.settings.messageFontSize.toFloat())
+    binding.body.setTextSize(TypedValue.COMPLEX_UNIT_PX, AccessibilityFontUtil.messageTextSizePx(binding.body.context, SignalStore.settings.messageFontSize.toFloat()))
     binding.body.movementMethod = LongClickMovementMethod.getInstance(context)
 
     if (binding.isIncoming) {

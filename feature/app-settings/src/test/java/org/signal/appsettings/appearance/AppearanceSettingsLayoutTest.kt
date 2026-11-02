@@ -13,7 +13,8 @@ class AppearanceSettingsLayoutTest : SignalLayoutStressTest() {
   private val populated = AppearanceSettingsState(
     language = "pt_BR",
     theme = AppearanceSettingsState.Theme.DARK,
-    messageFontSize = 28,
+    messageFontSize = 42,
+    interfaceFontScalePercent = 150,
     isCompactNavigationBar = true
   )
 

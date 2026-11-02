@@ -44,6 +44,7 @@
 
         <TextView
             android:id="@+id/hue_label"
+            android:labelFor="@id/hue_slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -69,6 +70,7 @@
 
         <TextView
             android:id="@+id/saturation_label"
+            android:labelFor="@id/saturation_slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -91,6 +93,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/saturation_label" />
 
+        <TextView
+            android:id="@+id/brightness_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:labelFor="@id/brightness_slider"
+            android:text="@string/AccessibilityChatColors__brightness"
+            android:textAppearance="@style/TextAppearance.Signal.Body2.Bold"
+            android:textColor="@color/signal_text_secondary"
+            app:layout_constraintTop_toBottomOf="@id/saturation_slider" />
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/brightness_slider"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:contentDescription="@string/AccessibilityChatColors__brightness"
+            android:splitTrack="false"
+            app:layout_constraintTop_toBottomOf="@id/brightness_label" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/save"
             style="@style/Signal.Widget.Button.Large.Primary"
@@ -103,7 +127,7 @@
             app:cornerRadius="68dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/saturation_slider"
+            app:layout_constraintTop_toBottomOf="@id/brightness_slider"
             app:layout_constraintVertical_bias="1" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

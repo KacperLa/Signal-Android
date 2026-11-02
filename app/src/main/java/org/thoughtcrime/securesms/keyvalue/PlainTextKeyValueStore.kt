@@ -3,6 +3,8 @@ package org.thoughtcrime.securesms.keyvalue
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import org.thoughtcrime.securesms.BuildConfig
 
@@ -23,6 +25,24 @@ object PlainTextKeyValueStore {
   private const val APP_MIGRATION_VERSION = "pref_app_migration_version"
   private const val LAST_VERSION_CODE = "last_version_code"
   private const val LANGUAGE = "pref_language"
+  private const val INTERFACE_FONT_SCALE = "accessibility_interface_font_scale_percent"
+
+  private val interfaceFontScaleChanged = MutableLiveData<Int>()
+
+  @JvmStatic
+  val interfaceFontScaleChanges: LiveData<Int> = interfaceFontScaleChanged
+
+  /** UI-only preference needed before activity resources are initialized. */
+  @JvmStatic
+  var interfaceFontScalePercent: Int
+    get() = sharedPrefs.getInt(INTERFACE_FONT_SCALE, 100).coerceIn(100, 150)
+    set(value) {
+      val bounded = value.coerceIn(100, 150)
+      if (bounded != interfaceFontScalePercent) {
+        sharedPrefs.edit(commit = true) { putInt(INTERFACE_FONT_SCALE, bounded) }
+        interfaceFontScaleChanged.postValue(bounded)
+      }
+    }
 
   private lateinit var sharedPrefs: SharedPreferences
 

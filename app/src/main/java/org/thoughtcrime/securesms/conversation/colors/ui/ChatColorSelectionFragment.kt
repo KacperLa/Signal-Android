@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
@@ -11,6 +12,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.conversation.colors.ChatColors
 import org.thoughtcrime.securesms.util.SystemWindowInsetsSetter
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
@@ -36,6 +38,13 @@ class ChatColorSelectionFragment : Fragment(R.layout.chat_color_selection_fragme
     SystemWindowInsetsSetter.attach(toolbar, viewLifecycleOwner, WindowInsetsCompat.Type.statusBars())
 
     SystemWindowInsetsSetter.attach(recycler, viewLifecycleOwner, WindowInsetsCompat.Type.navigationBars())
+
+    val blackText: SwitchCompat = view.findViewById(R.id.black_outgoing_text)
+    blackText.isChecked = SignalStore.chatColors.useBlackOutgoingText
+    blackText.setOnCheckedChangeListener { _, checked ->
+      SignalStore.chatColors.useBlackOutgoingText = checked
+      preview.refreshOutgoingTextColors()
+    }
 
     recycler.itemAnimator = null
     recycler.adapter = adapter

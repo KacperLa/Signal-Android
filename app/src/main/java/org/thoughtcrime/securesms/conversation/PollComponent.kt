@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -40,10 +41,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.signal.core.ui.compose.Buttons
@@ -57,6 +60,7 @@ import org.thoughtcrime.securesms.polls.PollOption
 import org.thoughtcrime.securesms.polls.PollRecord
 import org.thoughtcrime.securesms.polls.VoteState
 import org.thoughtcrime.securesms.polls.Voter
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil
 import org.thoughtcrime.securesms.util.DynamicTheme
 import org.thoughtcrime.securesms.util.VibrateUtil
 
@@ -72,16 +76,24 @@ fun setContent(
   onToggleVote: (PollOption, Boolean) -> Unit = { _, _ -> }
 ) {
   composeView.setContent {
-    SignalTheme(
-      isDarkMode = DynamicTheme.isDarkTheme(LocalContext.current)
-    ) {
-      Poll(
-        poll = poll,
-        onViewVotes = onViewVotes,
-        onToggleVote = onToggleVote,
-        pollColors = if (isOutgoing) PollColorsType.Outgoing.getColors(chatColor) else PollColorsType.Incoming.getColors(-1),
-        fontSize = SignalStore.settings.messageFontSize
-      )
+    val context = LocalContext.current
+    val systemFontScale = context.applicationContext.resources.configuration.fontScale
+    val density = LocalDensity.current.density
+    val messageDensity = remember(context, systemFontScale, density) {
+      Density(AccessibilityFontUtil.messageFontContext(context))
+    }
+    CompositionLocalProvider(LocalDensity provides messageDensity) {
+      SignalTheme(
+        isDarkMode = DynamicTheme.isDarkTheme(LocalContext.current)
+      ) {
+        Poll(
+          poll = poll,
+          onViewVotes = onViewVotes,
+          onToggleVote = onToggleVote,
+          pollColors = if (isOutgoing) PollColorsType.Outgoing.getColors(chatColor) else PollColorsType.Incoming.getColors(-1),
+          fontSize = SignalStore.settings.messageFontSize
+        )
+      }
     }
   }
 }
@@ -305,15 +317,18 @@ private sealed interface PollColorsType {
   data object Outgoing : PollColorsType {
     @Composable
     override fun getColors(chatColor: Int): PollColors {
+      val useBlackText = SignalStore.chatColors.useBlackOutgoingText
+      val primary = if (useBlackText) Color.Black else colorResource(R.color.conversation_item_sent_text_primary_color)
+      val secondary = if (useBlackText) Color.Black else colorResource(R.color.conversation_item_sent_text_secondary_color)
       return PollColors(
-        text = colorResource(R.color.conversation_item_sent_text_primary_color),
-        caption = colorResource(R.color.conversation_item_sent_text_secondary_color),
-        progress = colorResource(R.color.conversation_item_sent_text_primary_color),
+        text = primary,
+        caption = secondary,
+        progress = primary,
         progressBackground = SignalTheme.colors.colorTransparent3,
-        checkbox = colorResource(R.color.conversation_item_sent_text_secondary_color),
-        checkboxBackground = colorResource(R.color.conversation_item_sent_text_primary_color),
+        checkbox = secondary,
+        checkboxBackground = primary,
         button = Color(chatColor),
-        buttonBackground = colorResource(R.color.conversation_item_sent_text_primary_color)
+        buttonBackground = primary
       )
     }
   }

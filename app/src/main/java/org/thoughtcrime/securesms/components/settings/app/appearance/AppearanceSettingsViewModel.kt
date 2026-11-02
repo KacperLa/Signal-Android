@@ -65,7 +65,12 @@ class AppearanceSettingsViewModel(
 
       is AppearanceSettingsEvent.MessageFontSizeSelected -> {
         AppearanceSettingsRepository.setMessageFontSize(event.size)
-        _state.update { it.copy(messageFontSize = event.size) }
+        _state.update { it.copy(messageFontSize = AppearanceSettingsRepository.getMessageFontSize()) }
+      }
+
+      is AppearanceSettingsEvent.InterfaceFontScaleSelected -> {
+        AppearanceSettingsRepository.setInterfaceFontScalePercent(event.percent)
+        _state.update { it.copy(interfaceFontScalePercent = AppearanceSettingsRepository.getInterfaceFontScalePercent()) }
       }
 
       AppearanceSettingsEvent.NavigationBarSizeClicked -> {
@@ -92,6 +97,7 @@ class AppearanceSettingsViewModel(
       language = AppearanceSettingsRepository.getLanguage(),
       theme = AppearanceSettingsRepository.getTheme(),
       messageFontSize = AppearanceSettingsRepository.getMessageFontSize(),
+      interfaceFontScalePercent = AppearanceSettingsRepository.getInterfaceFontScalePercent(),
       isCompactNavigationBar = AppearanceSettingsRepository.isCompactNavigationBar(),
       isSystemThemeAvailable = AppearanceSettingsRepository.isSystemThemeAvailable(),
       isAppIconSupported = AppearanceSettingsRepository.isAppIconSupported()

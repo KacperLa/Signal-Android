@@ -50,6 +50,7 @@ class CustomChatColorCreatorPageFragment :
 
   private lateinit var hueSlider: AppCompatSeekBar
   private lateinit var saturationSlider: AppCompatSeekBar
+  private lateinit var brightnessSlider: AppCompatSeekBar
   private lateinit var preview: ChatColorPreviewView
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,6 +67,7 @@ class CustomChatColorCreatorPageFragment :
 
     val hueThumb = ThumbDrawable(requireContext())
     val saturationThumb = ThumbDrawable(requireContext())
+    val brightnessThumb = ThumbDrawable(requireContext())
 
     val gradientTool: CustomChatColorGradientToolView = view.findViewById(R.id.gradient_tool)
     val save: View = view.findViewById(R.id.save)
@@ -99,6 +101,10 @@ class CustomChatColorCreatorPageFragment :
     hueSlider = view.findViewById(R.id.hue_slider)
     saturationSlider = view.findViewById(R.id.saturation_slider)
 
+    brightnessSlider = view.findViewById(R.id.brightness_slider)
+    brightnessSlider.thumb = brightnessThumb
+    brightnessSlider.max = MAX_SEEK_DIVISIONS
+
     hueSlider.thumb = hueThumb
     saturationSlider.thumb = saturationThumb
 
@@ -124,6 +130,12 @@ class CustomChatColorCreatorPageFragment :
     }
 
     saturationSlider.progressDrawable = saturationProgressDrawable.forSeekBar()
+
+    val brightnessProgressDrawable = GradientDrawable().apply {
+      orientation = GradientDrawable.Orientation.LEFT_RIGHT
+    }
+    brightnessSlider.progressDrawable = brightnessProgressDrawable.forSeekBar()
+    brightnessSlider.setOnSeekBarChangeListener(OnProgressChangedListener(viewModel::setBrightnessProgress))
 
     hueSlider.setOnSeekBarChangeListener(
       OnProgressChangedListener {
@@ -171,10 +183,13 @@ class CustomChatColorCreatorPageFragment :
 
       hueSlider.progress = sliderState.huePosition
       saturationSlider.progress = sliderState.saturationPosition
+      brightnessSlider.progress = sliderState.brightnessPosition
 
       val color: Int = sliderState.getColor()
       hueThumb.setColor(sliderState.getHueColor())
       saturationThumb.setColor(color)
+      brightnessThumb.setColor(color)
+      brightnessProgressDrawable.colors = sliderState.getBrightnessColors()
       saturationProgressDrawable.colors = sliderState.getSaturationColors()
 
       preview.setWallpaper(state.wallpaper)
@@ -243,19 +258,12 @@ class CustomChatColorCreatorPageFragment :
 
   @ColorInt
   private fun ColorSlidersState.getColor(): Int {
-    val hue = huePosition.toHue(MAX_SEEK_DIVISIONS)
-    return ColorUtils.HSLToColor(
-      floatArrayOf(
-        hue,
-        saturationPosition.toUnit(MAX_SEEK_DIVISIONS),
-        calculateLightness(hue)
-      )
-    )
+    return toColor(MAX_SEEK_DIVISIONS)
   }
 
   private fun ColorSlidersState.getSaturationColors(): IntArray {
     val hue = huePosition.toHue(MAX_SEEK_DIVISIONS)
-    val level = calculateLightness(hue)
+    val level = brightnessPosition.toUnit(MAX_SEEK_DIVISIONS)
 
     return listOf(0f, 1f).map {
       ColorUtils.HSLToColor(
@@ -265,6 +273,12 @@ class CustomChatColorCreatorPageFragment :
           level
         )
       )
+    }.toIntArray()
+  }
+
+  private fun ColorSlidersState.getBrightnessColors(): IntArray {
+    return floatArrayOf(0f, 0.5f, 1f).map { lightness ->
+      ColorUtils.HSLToColor(floatArrayOf(huePosition.toHue(MAX_SEEK_DIVISIONS), saturationPosition.toUnit(MAX_SEEK_DIVISIONS), lightness))
     }.toIntArray()
   }
 
@@ -328,7 +342,9 @@ class CustomChatColorCreatorPageFragment :
   private class OnProgressChangedListener(private val updateFn: (Int) -> Unit) :
     SeekBar.OnSeekBarChangeListener {
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-      updateFn(progress)
+      if (fromUser) {
+        updateFn(progress)
+      }
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit

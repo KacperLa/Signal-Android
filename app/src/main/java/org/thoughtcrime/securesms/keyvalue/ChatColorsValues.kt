@@ -7,6 +7,7 @@ import java.io.IOException
 class ChatColorsValues internal constructor(store: KeyValueStore) : SignalStoreValues(store) {
 
   companion object {
+    private const val KEY_BLACK_OUTGOING_TEXT = "chat_colors.black_outgoing_text"
     private const val KEY_CHAT_COLORS = "chat_colors.chat_colors"
     private const val KEY_CHAT_COLORS_ID = "chat_colors.chat_colors.id"
     private const val KEY_CHAT_COLORS_AUTO_TOOLTIP = "chat_colors.auto.tooltip"
@@ -16,11 +17,17 @@ class ChatColorsValues internal constructor(store: KeyValueStore) : SignalStoreV
   public override fun onFirstEverAppLaunch() = Unit
 
   public override fun getKeysToIncludeInBackup(): MutableList<String> = mutableListOf(
+    KEY_BLACK_OUTGOING_TEXT,
     KEY_CHAT_COLORS,
     KEY_CHAT_COLORS_ID,
     KEY_CHAT_COLORS_AUTO_TOOLTIP,
     KEY_CHAT_COLORS_GRADIENT_TOOLTIP
   )
+
+  /** Local display preference; never sent to conversation participants. */
+  var useBlackOutgoingText: Boolean
+    get() = getBoolean(KEY_BLACK_OUTGOING_TEXT, false)
+    set(value) = putBoolean(KEY_BLACK_OUTGOING_TEXT, value)
 
   var shouldShowAutoTooltip: Boolean
     get() = getBoolean(KEY_CHAT_COLORS_AUTO_TOOLTIP, true)

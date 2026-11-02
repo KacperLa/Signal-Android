@@ -6,6 +6,7 @@
 package org.signal.appsettings.appearance
 
 import android.app.Application
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsExactly
@@ -104,10 +106,21 @@ class AppearanceSettingsScreenTest {
     setContent(AppearanceSettingsState(messageFontSize = 16))
 
     scrollTo(AppearanceSettingsTestTags.ROW_MESSAGE_FONT_SIZE)
-    composeTestRule.onNodeWithTag(AppearanceSettingsTestTags.ROW_MESSAGE_FONT_SIZE).performClick()
-    composeTestRule.onNodeWithText("Extra large").performClick()
+    composeTestRule.onNodeWithTag(AppearanceSettingsTestTags.ROW_MESSAGE_FONT_SIZE)
+      .performSemanticsAction(SemanticsActions.SetProgress) { it(42f) }
 
-    assertThat(events).contains(AppearanceSettingsEvent.MessageFontSizeSelected(28))
+    assertThat(events).contains(AppearanceSettingsEvent.MessageFontSizeSelected(42))
+  }
+
+  @Test
+  fun `interface font slider emits a separate event`() {
+    setContent(AppearanceSettingsState(messageFontSize = 22, interfaceFontScalePercent = 100))
+
+    scrollTo(AppearanceSettingsTestTags.ROW_INTERFACE_FONT_SIZE)
+    composeTestRule.onNodeWithTag(AppearanceSettingsTestTags.ROW_INTERFACE_FONT_SIZE)
+      .performSemanticsAction(SemanticsActions.SetProgress) { it(150f) }
+
+    assertThat(events).containsExactly(AppearanceSettingsEvent.InterfaceFontScaleSelected(150))
   }
 
   @Test

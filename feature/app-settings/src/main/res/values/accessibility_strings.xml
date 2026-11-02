@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_message_font_value">%1$d sp · message text</string>
+    <string name="accessibility_interface_font_size">Interface text size</string>
+    <string name="accessibility_interface_font_value">%1$d%% · menus and conversation list</string>
+</resources>

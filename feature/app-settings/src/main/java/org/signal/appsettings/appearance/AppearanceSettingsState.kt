@@ -12,6 +12,7 @@ data class AppearanceSettingsState(
   val language: String = "zz",
   val theme: Theme = Theme.SYSTEM,
   val messageFontSize: Int = 16,
+  val interfaceFontScalePercent: Int = 100,
   val isCompactNavigationBar: Boolean = false,
   val isSystemThemeAvailable: Boolean = true,
   val isAppIconSupported: Boolean = true,

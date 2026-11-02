@@ -15,6 +15,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.signal.core.ui.view.Stub;
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ConversationItemFooter;
 import org.thoughtcrime.securesms.components.FullScreenDialogFragment;
@@ -129,7 +130,7 @@ public class LongMessageFragment extends FullScreenDialogFragment {
                                                      CommunicationActions.handlePotentialProxyLinkUrl(requireActivity(), url));
 
       bubble.setVisibility(View.VISIBLE);
-      text.setTextSize(TypedValue.COMPLEX_UNIT_SP, SignalStore.settings().getMessageFontSize());
+      text.setTextSize(TypedValue.COMPLEX_UNIT_PX, AccessibilityFontUtil.messageTextSizePx(text.getContext(), SignalStore.settings().getMessageFontSize()));
       text.setTextAsync(body);
       text.setTextIsSelectable(true);
       text.setMovementMethod(LongClickMovementMethod.getInstance(getContext()));

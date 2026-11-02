@@ -21,19 +21,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import kotlin.math.roundToInt
 import org.signal.appsettings.AppSettingsLazyColumn
 import org.signal.appsettings.R
 import org.signal.core.ui.compose.Buttons
@@ -54,6 +61,7 @@ object AppearanceSettingsTestTags {
   const val ROW_CHAT_COLOR_AND_WALLPAPER = "row-chat-color-and-wallpaper"
   const val ROW_APP_ICON = "row-app-icon"
   const val ROW_MESSAGE_FONT_SIZE = "row-message-font-size"
+  const val ROW_INTERFACE_FONT_SIZE = "row-interface-font-size"
   const val ROW_NAVIGATION_BAR_SIZE = "row-navigation-bar-size"
   const val BUTTON_NAVIGATION_BAR_NORMAL = "button-navigation-bar-normal"
   const val BUTTON_NAVIGATION_BAR_COMPACT = "button-navigation-bar-compact"
@@ -123,13 +131,24 @@ fun AppearanceSettingsScreen(
       }
 
       item {
-        Rows.RadioListRow(
-          text = stringResource(R.string.preferences_chats__message_text_size),
-          labels = stringArrayResource(R.array.pref_message_font_size_entries),
-          values = integerArrayResource(R.array.pref_message_font_size_values).map { it.toString() }.toTypedArray(),
-          selectedValue = state.messageFontSize.toString(),
-          onSelected = { onEvent(AppearanceSettingsEvent.MessageFontSizeSelected(it.toInt())) },
-          modifier = Modifier.testTag(AppearanceSettingsTestTags.ROW_MESSAGE_FONT_SIZE)
+        FontSizeSlider(
+          label = stringResource(R.string.preferences_chats__message_text_size),
+          value = state.messageFontSize,
+          range = MessageFontSizes.MIN..MessageFontSizes.MAX,
+          valueLabel = { stringResource(R.string.accessibility_message_font_value, it) },
+          onSelected = { onEvent(AppearanceSettingsEvent.MessageFontSizeSelected(it)) },
+          tag = AppearanceSettingsTestTags.ROW_MESSAGE_FONT_SIZE
+        )
+      }
+
+      item {
+        FontSizeSlider(
+          label = stringResource(R.string.accessibility_interface_font_size),
+          value = state.interfaceFontScalePercent,
+          range = 100..150,
+          valueLabel = { stringResource(R.string.accessibility_interface_font_value, it) },
+          onSelected = { onEvent(AppearanceSettingsEvent.InterfaceFontScaleSelected(it)) },
+          tag = AppearanceSettingsTestTags.ROW_INTERFACE_FONT_SIZE
         )
       }
 
@@ -277,4 +296,28 @@ private fun AppearanceSettingsScreenNavigationBarSizePreview() {
     state = AppearanceSettingsState(dialog = AppearanceSettingsState.Dialog.NavigationBarSize(isCompact = true)),
     onEvent = {}
   )
+}
+
+/** Keep drag state local; persist once on release, including accessibility adjustments. */
+@Composable
+private fun FontSizeSlider(
+  label: String,
+  value: Int,
+  range: IntRange,
+  valueLabel: @Composable (Int) -> String,
+  onSelected: (Int) -> Unit,
+  tag: String
+) {
+  var pending by rememberSaveable(value) { mutableFloatStateOf(value.coerceIn(range).toFloat()) }
+  Column(modifier = Modifier.fillMaxWidth().horizontalGutters().padding(vertical = 12.dp)) {
+    Text(text = label, style = MaterialTheme.typography.bodyLarge)
+    Text(text = valueLabel(pending.roundToInt()), style = MaterialTheme.typography.bodyMedium)
+    Slider(
+      value = pending,
+      onValueChange = { pending = it },
+      onValueChangeFinished = { onSelected(pending.roundToInt().coerceIn(range)) },
+      valueRange = range.first.toFloat()..range.last.toFloat(),
+      modifier = Modifier.fillMaxWidth().testTag(tag).semantics { contentDescription = label }
+    )
+  }
 }

@@ -16,6 +16,8 @@ import androidx.core.app.ActivityOptionsCompat;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.dependencies.AppDependencies;
+import org.thoughtcrime.securesms.keyvalue.PlainTextKeyValueStore;
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil;
 import org.thoughtcrime.securesms.util.AppStartup;
 import org.signal.core.util.ConfigurationUtil;
 import org.thoughtcrime.securesms.util.WindowUtil;
@@ -31,18 +33,23 @@ import java.util.Objects;
 public abstract class BaseActivity extends AppCompatActivity {
   private static final String TAG = Log.tag(BaseActivity.class);
 
+  private int appliedInterfaceFontScale = 100;
+  private boolean fontScaleRecreationRequested;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     AppStartup.getInstance().onCriticalRenderEventStart();
     logEvent("onCreate()");
     EdgeToEdge.enable(this);
     super.onCreate(savedInstanceState);
+    PlainTextKeyValueStore.getInterfaceFontScaleChanges().observe(this, ignored -> recreateForInterfaceFontChange());
     AppStartup.getInstance().onCriticalRenderEventEnd();
   }
 
   @Override
   protected void onResume() {
     super.onResume();
+    recreateForInterfaceFontChange();
     WindowUtil.initializeScreenshotSecurity(this, getWindow());
   }
 
@@ -81,6 +88,8 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     configuration.uiMode      = (configuration.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) | mapNightModeToConfigurationUiMode(newBase, appCompatNightMode);
     configuration.orientation = Configuration.ORIENTATION_UNDEFINED;
+    appliedInterfaceFontScale = PlainTextKeyValueStore.getInterfaceFontScalePercent();
+    configuration.fontScale = AccessibilityFontUtil.interfaceFontScale(newBase.getApplicationContext().getResources().getConfiguration().fontScale, appliedInterfaceFontScale);
 
     applyOverrideConfiguration(configuration);
   }
@@ -89,6 +98,13 @@ public abstract class BaseActivity extends AppCompatActivity {
   public void applyOverrideConfiguration(@NonNull Configuration overrideConfiguration) {
     DynamicLanguageContextWrapper.prepareOverrideConfiguration(overrideConfiguration);
     super.applyOverrideConfiguration(overrideConfiguration);
+  }
+
+  private void recreateForInterfaceFontChange() {
+    if (!fontScaleRecreationRequested && appliedInterfaceFontScale != PlainTextKeyValueStore.getInterfaceFontScalePercent()) {
+      fontScaleRecreationRequested = true;
+      recreate();
+    }
   }
 
   private void logEvent(@NonNull String event) {

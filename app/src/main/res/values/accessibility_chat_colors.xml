@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="AccessibilityChatColors__brightness">Brightness</string>
+    <string name="AccessibilityChatColors__black_text">Use black outgoing text (all chats)</string>
+</resources>

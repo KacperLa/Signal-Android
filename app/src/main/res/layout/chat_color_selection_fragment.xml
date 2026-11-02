@@ -27,12 +27,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/black_outgoing_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:padding="16dp"
+        android:text="@string/AccessibilityChatColors__black_text"
+        app:layout_constraintTop_toBottomOf="@id/preview" />
+
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:background="@color/signal_inverse_transparent_05"
-        app:layout_constraintTop_toBottomOf="@id/preview" />
+        app:layout_constraintTop_toBottomOf="@id/black_outgoing_text" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"

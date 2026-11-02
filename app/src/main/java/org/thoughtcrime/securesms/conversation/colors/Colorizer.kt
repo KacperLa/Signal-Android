@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.conversation.colors
 
 import android.content.Context
+import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import org.signal.core.models.ServiceId
@@ -8,6 +9,7 @@ import org.signal.core.models.recipients.RecipientId
 import org.signal.core.ui.util.ThemeUtil
 import org.signal.core.util.orNull
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.signal.core.ui.R as CoreUiR
 
@@ -19,17 +21,17 @@ import org.signal.core.ui.R as CoreUiR
 interface Colorizer {
   @ColorInt
   fun getOutgoingBodyTextColor(context: Context): Int {
-    return ContextCompat.getColor(context, R.color.conversation_outgoing_body_color)
+    return if (SignalStore.chatColors.useBlackOutgoingText) Color.BLACK else ContextCompat.getColor(context, R.color.conversation_outgoing_body_color)
   }
 
   @ColorInt
   fun getOutgoingFooterTextColor(context: Context): Int {
-    return ContextCompat.getColor(context, R.color.conversation_outgoing_footer_color)
+    return if (SignalStore.chatColors.useBlackOutgoingText) Color.BLACK else ContextCompat.getColor(context, R.color.conversation_outgoing_footer_color)
   }
 
   @ColorInt
   fun getOutgoingFooterIconColor(context: Context): Int {
-    return ContextCompat.getColor(context, R.color.conversation_outgoing_footer_color)
+    return if (SignalStore.chatColors.useBlackOutgoingText) Color.BLACK else ContextCompat.getColor(context, R.color.conversation_outgoing_footer_color)
   }
 
   @ColorInt

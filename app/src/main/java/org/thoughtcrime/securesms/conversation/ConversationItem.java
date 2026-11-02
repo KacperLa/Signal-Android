@@ -81,6 +81,7 @@ import org.signal.core.util.eventbus.RestartableSubscription;
 import org.signal.core.util.eventbus.ThreadMode;
 import org.signal.core.util.logging.Log;
 import org.signal.ringrtc.CallLinkRootKey;
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil;
 import org.thoughtcrime.securesms.BindableConversationItem;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.attachments.Attachment;
@@ -1193,7 +1194,7 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
   {
     boolean isMessageDetails = displayMode == ConversationItemDisplayMode.Detailed.INSTANCE;
 
-    bodyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, SignalStore.settings().getMessageFontSize());
+    bodyText.setTextSize(TypedValue.COMPLEX_UNIT_PX, AccessibilityFontUtil.messageTextSizePx(getContext(), SignalStore.settings().getMessageFontSize()));
 
     bodyText.setTextIsSelectable(isMessageDetails);
     if (isMessageDetails) {
@@ -1944,7 +1945,7 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
 
       quoteView.setWallpaperEnabled(hasWallpaper);
       quoteView.setVisibility(View.VISIBLE);
-      quoteView.setTextSize(TypedValue.COMPLEX_UNIT_SP, SignalStore.settings().getMessageQuoteFontSize(context));
+      quoteView.setTextSize(TypedValue.COMPLEX_UNIT_PX, AccessibilityFontUtil.messageTextSizePx(context, SignalStore.settings().getMessageQuoteFontSize(context)));
       quoteView.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
 
       quoteView.setOnClickListener(view -> {

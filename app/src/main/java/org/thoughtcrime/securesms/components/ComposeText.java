@@ -14,6 +14,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.View;
 import android.view.Menu;
@@ -48,6 +49,7 @@ import org.thoughtcrime.securesms.conversation.ui.inlinequery.InlineQueryReplace
 import org.thoughtcrime.securesms.database.model.Mention;
 import org.thoughtcrime.securesms.database.model.databaseprotos.BodyRangeList;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -330,7 +332,13 @@ public class ComposeText extends EmojiEditText {
   public void onProvideAutofillStructure(ViewStructure structure, int flags) {
   }
 
+  /** Refreshes the independent message font after returning from appearance settings. */
+  public void applyMessageFontSize() {
+    setTextSize(TypedValue.COMPLEX_UNIT_PX, AccessibilityFontUtil.messageTextSizePx(getContext(), SignalStore.settings().getMessageFontSize()));
+  }
+
   private void initialize() {
+    applyMessageFontSize();
     if (Build.VERSION.SDK_INT >= 26) {
       setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
     }

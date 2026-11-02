@@ -58,6 +58,8 @@ class AppearanceSettingsViewModelTest {
     every { AppearanceSettingsRepository.getLanguage() } returns "zz"
     every { AppearanceSettingsRepository.getTheme() } returns Theme.SYSTEM
     every { AppearanceSettingsRepository.getMessageFontSize() } returns 16
+    every { AppearanceSettingsRepository.getInterfaceFontScalePercent() } returns 100
+    every { AppearanceSettingsRepository.setInterfaceFontScalePercent(any()) } just Runs
     every { AppearanceSettingsRepository.isCompactNavigationBar() } returns false
     every { AppearanceSettingsRepository.isSystemThemeAvailable() } returns true
     every { AppearanceSettingsRepository.isAppIconSupported() } returns true
@@ -165,11 +167,24 @@ class AppearanceSettingsViewModelTest {
     val viewModel = createViewModel()
     val actions = collectActions(viewModel.actions)
 
+    every { AppearanceSettingsRepository.getMessageFontSize() } returns 28
     viewModel.onEvent(AppearanceSettingsEvent.MessageFontSizeSelected(28))
 
     verify { AppearanceSettingsRepository.setMessageFontSize(28) }
     assertThat(viewModel.state.value.messageFontSize).isEqualTo(28)
     assertThat(actions).isEmpty()
+  }
+
+  @Test
+  fun `interface font size persists independently of message size`() = runTest(testDispatcher) {
+    val viewModel = createViewModel()
+    every { AppearanceSettingsRepository.getInterfaceFontScalePercent() } returns 150
+
+    viewModel.onEvent(AppearanceSettingsEvent.InterfaceFontScaleSelected(150))
+
+    verify { AppearanceSettingsRepository.setInterfaceFontScalePercent(150) }
+    assertThat(viewModel.state.value.interfaceFontScalePercent).isEqualTo(150)
+    assertThat(viewModel.state.value.messageFontSize).isEqualTo(16)
   }
 
   @Test

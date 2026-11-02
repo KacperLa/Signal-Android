@@ -7,6 +7,7 @@ package org.thoughtcrime.securesms.conversation.v2.items
 
 import android.util.TypedValue
 import android.view.View
+import org.thoughtcrime.securesms.util.AccessibilityFontUtil
 import org.thoughtcrime.securesms.components.QuoteView
 import org.thoughtcrime.securesms.conversation.v2.data.ConversationMessageElement
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord
@@ -104,7 +105,7 @@ class V2ConversationItemMediaViewHolder<Model : MappingModel<Model>>(
     )
 
     quoteView.setWallpaperEnabled(conversationContext.hasWallpaper())
-    quoteView.setTextSize(TypedValue.COMPLEX_UNIT_SP, SignalStore.settings.getMessageQuoteFontSize(context).toFloat())
+    quoteView.setTextSize(TypedValue.COMPLEX_UNIT_PX, AccessibilityFontUtil.messageTextSizePx(context, SignalStore.settings.getMessageQuoteFontSize(context).toFloat()))
 
     val isOutgoing = conversationMessage.messageRecord.isOutgoing
     when (shape) {

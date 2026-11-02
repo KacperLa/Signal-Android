@@ -41,6 +41,12 @@ object AppearanceSettingsRepository {
     SignalStore.settings.messageFontSize = size
   }
 
+  fun getInterfaceFontScalePercent(): Int = SignalStore.settings.interfaceFontScalePercent
+
+  fun setInterfaceFontScalePercent(percent: Int) {
+    SignalStore.settings.interfaceFontScalePercent = percent
+  }
+
   fun isCompactNavigationBar(): Boolean = SignalStore.settings.useCompactNavigationBar
 
   fun setCompactNavigationBar(isCompact: Boolean) {

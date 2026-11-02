@@ -31,6 +31,9 @@ sealed interface AppearanceSettingsEvent {
   /** The user picked a message font size, in sp. */
   data class MessageFontSizeSelected(val size: Int) : AppearanceSettingsEvent
 
+  /** Interface text scaling, independent of message text and system display size. */
+  data class InterfaceFontScaleSelected(val percent: Int) : AppearanceSettingsEvent
+
   /** The user tapped the navigation bar size row, which asks them to pick a size. */
   data object NavigationBarSizeClicked : AppearanceSettingsEvent
 

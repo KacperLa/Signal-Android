@@ -594,6 +594,9 @@ class ConversationFragment :
   private lateinit var addToContactsLauncher: ActivityResultLauncher<Intent>
   private lateinit var conversationActivityResultContracts: ConversationActivityResultContracts
   private lateinit var scrollToPositionDelegate: ScrollToPositionDelegate
+  private var lastBlackOutgoingText: Boolean = SignalStore.chatColors.useBlackOutgoingText
+  private var lastMessageFontSize: Int = SignalStore.settings.messageFontSize
+
   private lateinit var adapter: ConversationAdapterV2
   private lateinit var typingIndicatorAdapter: ConversationTypingIndicatorAdapter
   private lateinit var recyclerViewColorizer: RecyclerViewColorizer
@@ -1262,6 +1265,15 @@ class ConversationFragment :
 
   override fun onResume() {
     super.onResume()
+
+    val blackOutgoingText = SignalStore.chatColors.useBlackOutgoingText
+    val messageFontSize = SignalStore.settings.messageFontSize
+    if (lastBlackOutgoingText != blackOutgoingText || lastMessageFontSize != messageFontSize) {
+      lastBlackOutgoingText = blackOutgoingText
+      lastMessageFontSize = messageFontSize
+      composeText.applyMessageFontSize()
+      adapter.notifyDataSetChanged()
+    }
 
     // Reselects which gifs play, since a gif whose tapped playback was dropped on pause may now autoplay.
     binding.conversationItemRecycler.requestLayout()
