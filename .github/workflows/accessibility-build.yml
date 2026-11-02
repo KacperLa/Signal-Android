@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 90
     env:
       GRADLE_OPTS: -Dorg.gradle.daemon=false
-      # Override upstream's 12 GiB Gradle / 4 GiB Kotlin defaults on a standard runner.
+      # Bound Gradle to 4 GiB; retain upstream's 4 GiB Kotlin heap for the large app module.
       FORK_GRADLE_JVM_ARGS: -Xmx4g -Xms256m -XX:MaxMetaspaceSize=768m -Dcom.android.tools.r8.deterministicdebugging=true -XX:+UnlockExperimentalVMOptions -XX:hashCode=3
     steps:
       - name: Check out this fork's triggering commit
@@ -64,7 +64,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$HOME/.gradle"
           # Runner-local settings only: no signing properties, tokens, or private build cache.
-          printf 'org.gradle.jvmargs=%s\nkotlin.daemon.jvmargs=-Xmx1g -XX:MaxMetaspaceSize=512m\norg.gradle.workers.max=2\n' \
+          printf 'org.gradle.jvmargs=%s\nkotlin.daemon.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m\norg.gradle.workers.max=2\n' \
             "$FORK_GRADLE_JVM_ARGS" > "$HOME/.gradle/gradle.properties"
           git rev-parse HEAD
           java -version
