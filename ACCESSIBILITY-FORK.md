@@ -68,3 +68,15 @@ official app. Do not replace a daily installation until signing, backup/restore,
 message alerts and incoming-call behavior have been separately validated.
 Maintain the fork against upstream security updates. Do not upload signing keys
 or backup material into this repository.
+
+## Fork CI
+
+`Accessibility fork unsigned APK` runs on pushes to `accessibility-controls` and
+supports manual dispatch once GitHub exposes the workflow. It is guarded to this
+fork, uses a standard GitHub-hosted runner, installs the upstream toolchain,
+runs focused tests and builds the `githubProdRelease` variant. That variant does
+not use Signal's official self-update feed. APKs/checksums and test reports are
+workflow artifacts retained for seven days, not GitHub Releases. No signing key,
+private cache credential or repository write permission is used. CI success and
+artifact availability must be checked for the exact commit; workflow presence
+alone does not establish a successful build.

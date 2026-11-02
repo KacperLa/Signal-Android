@@ -1,0 +1,119 @@
+name: Accessibility fork unsigned APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [accessibility-controls]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: accessibility-unsigned-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-and-build:
+    # Never run this customization's job in upstream or another fork.
+    if: github.repository == 'KacperLa/Signal-Android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+      # Override upstream's 12 GiB Gradle / 4 GiB Kotlin defaults on a standard runner.
+      FORK_GRADLE_JVM_ARGS: -Xmx4g -Xms256m -XX:MaxMetaspaceSize=768m -Dcom.android.tools.r8.deterministicdebugging=true -XX:+UnlockExperimentalVMOptions -XX:hashCode=3
+    steps:
+      - name: Check out this fork's triggering commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: true
+          lfs: true
+
+      - name: Set up Java 21
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
+
+      - name: Install required Android packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          sdkmanager="$sdk_root/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$sdkmanager"
+          echo "ANDROID_HOME=$sdk_root" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
+          # sdkmanager may close stdin early; only its exit status matters here.
+          set +o pipefail
+          yes | "$sdkmanager" --sdk_root="$sdk_root" --licenses > /dev/null
+          result=${PIPESTATUS[1]}
+          set -o pipefail
+          test "$result" -eq 0
+          "$sdkmanager" --sdk_root="$sdk_root" \
+            'platform-tools' 'platforms;android-37.0' 'build-tools;36.0.0' \
+            'ndk;28.0.13004108' 'cmake;3.22.1'
+
+      - name: Record source and configure bounded build resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.gradle"
+          # Runner-local settings only: no signing properties, tokens, or private build cache.
+          printf 'org.gradle.jvmargs=%s\nkotlin.daemon.jvmargs=-Xmx1g -XX:MaxMetaspaceSize=512m\norg.gradle.workers.max=2\n' \
+            "$FORK_GRADLE_JVM_ARGS" > "$HOME/.gradle/gradle.properties"
+          git rev-parse HEAD
+          java -version
+          df -h .
+          free -h
+
+      - name: Test appearance sliders and sizing
+        run: >-
+          ./gradlew --console=plain --no-daemon
+          :feature:app-settings:testDebugUnitTest
+          --tests 'org.signal.appsettings.appearance.*'
+
+      - name: Test app preference and color integration
+        run: >-
+          ./gradlew --console=plain --no-daemon
+          :Signal-Android:testPlayProdDebugUnitTest
+          --tests 'org.thoughtcrime.securesms.components.settings.app.appearance.AppearanceSettingsViewModelTest'
+          --tests 'org.thoughtcrime.securesms.util.AccessibilityFontUtilTest'
+          --tests 'org.thoughtcrime.securesms.conversation.colors.ui.custom.ColorSlidersStateTest'
+
+      - name: Assemble unsigned GitHub-flavor release
+        run: ./gradlew --console=plain --no-daemon :Signal-Android:assembleGithubProdRelease
+
+      - name: Record checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd app/build/outputs/apk/githubProd/release
+          sha256sum ./*.apk > SHA256SUMS.txt
+          printf 'Source commit: %s\nUnsigned build; signing and device verification are separate.\n' "$GITHUB_SHA" > BUILD-INFO.txt
+
+      - name: Upload unsigned APKs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: signal-accessibility-unsigned-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/githubProd/release/*.apk
+            app/build/outputs/apk/githubProd/release/SHA256SUMS.txt
+            app/build/outputs/apk/githubProd/release/BUILD-INFO.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: accessibility-verification-${{ github.sha }}
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
